@@ -80,7 +80,7 @@ namespace lab618
             while (cur_block != nullptr)
             {
                 for (int i = 0; i < m_blkSize; ++i) {
-                    if (reinterpret_cast<int*>(&cur_block->pdata + i) == p)
+                    if (cur_block->pdata[i] == p)
                     {
                         cur_ind = i;
                         break;
@@ -106,14 +106,14 @@ namespace lab618
             {
                 max_ind = m_blkSize - 1;
             }
+            (cur_block->pdata + cur_ind)->~T();
             for (int i = cur_ind; i < max_ind - 1; ++i)
             {
-                cur_block->pdata + i  = cur_block->pdata + (i + 1);
+                cur_block->pdata[i] = cur_block->pdata[i + 1];
             }
-            (cur_block->pdata + max_ind)->~T();
+            cur_block->pdata[max_ind] = nullptr;
             cur_block->firstFreeIndex = max_ind;
             --cur_block->usedCount;
-
             return true;
         }
 
