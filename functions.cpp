@@ -39,7 +39,7 @@ int compareFunc(const TestStruct *pElem1, const TestStruct *pElem2)
     return -1;
 }
 
-int hashFunc(const TestStruct* pElement)
+unsigned int hashFunc(const TestStruct* pElement)
 {
     const int p = 7;
     unsigned int hash = 0;
@@ -49,5 +49,5 @@ int hashFunc(const TestStruct* pElement)
         hash += (i - 'A') * p_pow;
         p_pow *= p;
     }
-    return (int)hash;
+    return hash;
 }
