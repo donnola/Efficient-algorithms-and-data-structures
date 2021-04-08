@@ -80,7 +80,7 @@ namespace lab618
             while (cur_block != nullptr)
             {
                 for (int i = 0; i < m_blkSize; ++i) {
-                    if (cur_block->pdata[i] == p)
+                    if((cur_block->pdata +i) == p)
                     {
                         cur_ind = i;
                         break;
