@@ -3,5 +3,6 @@
 
 CMakeFiles/Efficient_algorithms_and_data_structures.dir/functions.cpp.o: ../functions.cpp
 CMakeFiles/Efficient_algorithms_and_data_structures.dir/functions.cpp.o: ../hash.h
+CMakeFiles/Efficient_algorithms_and_data_structures.dir/functions.cpp.o: ../list.h
 CMakeFiles/Efficient_algorithms_and_data_structures.dir/functions.cpp.o: ../mm.h
 

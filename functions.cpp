@@ -54,36 +54,13 @@ unsigned int hashFunc(const TestStruct* pElement)
     return hash;
 }
 
-const int ELEMENTS_COUNT = 1000;
+const int ELEMENTS_COUNT = 1000000;
 typedef lab618::CSingleLinkedList<TestStruct> TestSingleList;
 typedef lab618::CDualLinkedList<TestStruct> TestList;
 
 
 void TestListFunction()
 {
-    // тест односвязного списка
-
-    TestSingleList single_list;
-    for (int i = 0; i < ELEMENTS_COUNT; ++i)
-    {
-        TestStruct ts;
-        generate(&ts);
-        single_list.pushBack(ts);
-    }
-
-    assert(single_list.getSize() == ELEMENTS_COUNT);
-
-    for (TestSingleList::CIterator it = single_list.begin(); it.isValid(); ++it)
-    {
-        it.getLeaf();
-        TestStruct ts = *it;
-        single_list.erase(it);
-    }
-
-    assert(single_list.getSize() == 0);
-
-    /// тест двусвязного списка
-
     TestList list;
     for (int i = 0; i < ELEMENTS_COUNT; ++i)
     {
@@ -94,12 +71,17 @@ void TestListFunction()
 
     assert(list.getSize() == ELEMENTS_COUNT);
 
-    for (TestList::CIterator it = list.begin(); it.isValid(); ++it)
-    {
-        it.getLeaf();
-        TestStruct ts = *it;
-        list.erase(it);
+    for (int i = 0; i < ELEMENTS_COUNT / 4; ++i) {
+        list.popBack();
     }
+
+    for (TestList::CIterator it = list.end(); it.isValid(); --it)
+    {
+        TestStruct ts = *it;
+        list.eraseAndNext(it);
+    }
+
+    assert(list.getSize() == 0);
 }
 
 
