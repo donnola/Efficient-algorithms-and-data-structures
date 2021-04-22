@@ -111,6 +111,7 @@ namespace lab618
             {
                 cur_block->pdata[i] = cur_block->pdata[i + 1];
             }
+            memset(reinterpret_cast<void*>(cur_block->pdata + max_ind), 0, sizeof(T));
             cur_block->firstFreeIndex = max_ind;
             --cur_block->usedCount;
             return true;
@@ -156,13 +157,12 @@ namespace lab618
         {
             block* pnew_block = new block;
             pnew_block->pdata = reinterpret_cast<T*>(new char[sizeof(T) * m_blkSize]);
+            memset(reinterpret_cast<void*>(pnew_block->pdata), 0, sizeof(T) * m_blkSize);
             for (int i = 0; i < m_blkSize - 1; ++i)
             {
-                memset(reinterpret_cast<void*>(&(pnew_block->pdata + i)), 0, sizeof(T));
-                *(reinterpret_cast<int*>(&(pnew_block->pdata + i))) = i + 1;
+                *(reinterpret_cast<int*>(pnew_block->pdata + i)) = i + 1;
             }
-            memset(reinterpret_cast<void*>(&(pnew_block->pdata + (m_blkSize - 1))), 0, sizeof(T));
-            *(reinterpret_cast<int*>(&(pnew_block->pdata + (m_blkSize - 1)))) = -1;
+            *(reinterpret_cast<int*>(pnew_block->pdata + (m_blkSize - 1))) = -1;
 
             pnew_block->firstFreeIndex = 0;
             pnew_block->usedCount = 0;
