@@ -81,14 +81,8 @@ namespace lab618
 
             void setLeafPreBegin(leaf* p)
             {
-                if (m_pBegin == p) {
-                    return;
-                }
-                leaf* tmpLeaf = m_pBegin;
-                while (tmpLeaf->pnext != p) {
-                    tmpLeaf = tmpLeaf->pnext;
-                }
-                m_pCurrent = tmpLeaf;
+                m_pCurrent = nullptr;
+                m_pBegin = p;
             }
 
             bool isValid() {
@@ -110,17 +104,13 @@ namespace lab618
 
         virtual ~CSingleLinkedList()
         {
-            while (m_pBegin != nullptr) {
-                leaf *curDel = m_pBegin;
-                m_pBegin = m_pBegin->pnext;
-                delete curDel;
-            }
+            clear();
         }
 
         void pushBack(T& data)
         {
             leaf* newLeaf = new leaf(data, nullptr);
-            if (getSize() == 0) {
+            if (nullptr == m_pEnd) {
                 m_pBegin = newLeaf;
             }
             else {
@@ -132,7 +122,7 @@ namespace lab618
         void pushFront(T& data)
         {
             leaf *newLeaf = new leaf(data, m_pBegin);
-            if (getSize() == 0) {
+            if (nullptr == m_pBegin) {
                 m_pEnd = newLeaf;
             }
             m_pBegin = newLeaf;
@@ -150,18 +140,33 @@ namespace lab618
         // изменяет состояние итератора. выставляет предыдущую позицию.
         void erase(CIterator& it)
         {
-            leaf* delLeaf = it.getLeaf();
-            it.setLeafPreBegin(delLeaf);
-            if (delLeaf == m_pBegin) {
-                m_pBegin = delLeaf->pnext;
-                it = CIterator(m_pBegin);
-                it.setLeaf(nullptr);
+            if (!it.isValid()) {
+                return;
+            }
+            leaf* p = it.getLeaf();
+            leaf* pPrev = nullptr;
+            if (p == m_pBegin) {
+                m_pBegin = p->pnext;
+                it.setLeafPreBegin(m_pBegin);
             }
             else {
-                leaf* currLeaf = it.getLeaf();
-                currLeaf->pnext = delLeaf->pnext;
+                pPrev = m_pBegin;
+                while (nullptr != pPrev) {
+                    if (pPrev->pnext == p) {
+                        break;
+                    }
+                    pPrev = pPrev->pnext;
+                }
+                it.setLeaf(pPrev);
             }
-            delete delLeaf;
+            if (nullptr != pPrev) {
+                pPrev->pnext = p->pnext;
+            }
+            if (!p->pnext) {
+                m_pEnd = pPrev;
+            }
+            p->pnext = nullptr;
+            delete p;
         }
 
         int getSize()
@@ -288,23 +293,19 @@ namespace lab618
             // применяется в erase и eraseAndNext
             void setLeafPreBegin(leaf* p)
             {
-                if (m_pBegin == p) {
-                    return;
-                }
-                m_pCurrent = p->pprev;
+                m_pCurrent = nullptr;
+                m_pBegin = p;
             }
 
             // применяется в erase и eraseAndNext
             void setLeafPostEnd(leaf* p)
             {
-                if (m_pEnd == p) {
-                    return;
-                }
-                m_pCurrent = p->pnext;
+                m_pCurrent = nullptr;
+                m_pEnd = p;
             }
 
             bool isValid() {
-                return m_pBegin != nullptr;
+                return m_pCurrent != nullptr;
             }
 
         private:
@@ -324,17 +325,13 @@ namespace lab618
 
         virtual ~CDualLinkedList()
         {
-            while (m_pBegin != nullptr) {
-                leaf* curDel = m_pBegin;
-                m_pBegin = m_pBegin->pnext;
-                delete curDel;
-            }
+            clear();
         };
 
         void pushBack(T& data)
         {
             leaf *newLeaf = new leaf(data, m_pEnd, nullptr);
-            if (getSize() == 0) {
+            if (nullptr == m_pEnd) {
                 m_pBegin = newLeaf;
             }
             else {
@@ -355,7 +352,7 @@ namespace lab618
         void pushFront(T& data)
         {
             leaf* newLeaf = new leaf(data, nullptr, m_pBegin);
-            if (getSize() == 0) {
+            if (nullptr == m_pBegin) {
                 m_pEnd = newLeaf;
             }
             else {
@@ -376,39 +373,65 @@ namespace lab618
         // изменяет состояние итератора. выставляет предыдущую позицию.
         void erase(CIterator& it)
         {
-            leaf* delLeaf = it.getLeaf();
-            it.setLeafPreBegin(delLeaf);
-            if (delLeaf == m_pBegin) {
-                m_pBegin = delLeaf->pnext;
-                m_pBegin->pprev = nullptr;
-                it = CIterator(m_pBegin);
-                it.setLeaf(nullptr);
+            if (!it.isValid()) {
+                return;
+            }
+            leaf* p = it.getLeaf();
+            leaf* pPrev = nullptr;
+            if (p == m_pBegin) {
+                m_pBegin = p->pnext;
+                it.setLeafPreBegin(m_pBegin);
             }
             else {
-                leaf* currLeaf = it.getLeaf();
-                currLeaf->pnext = delLeaf->pnext;
-                delLeaf->pnext->pprev = currLeaf;
+                pPrev = m_pBegin;
+                while (nullptr != pPrev) {
+                    if (pPrev->pnext == p) {
+                        break;
+                    }
+                    pPrev = pPrev->pnext;
+                }
+                it.setLeaf(pPrev);
             }
-            delete delLeaf;
+            if (nullptr != pPrev) {
+                pPrev->pnext = p->pnext;
+            }
+            if (!p->pnext) {
+                m_pEnd = pPrev;
+            }
+            p->pnext = nullptr;
+            delete p;
         }
 
         // изменяет состояние итератора. выставляет следующую позицию.
         void eraseAndNext(CIterator& it)
         {
-            leaf* delLeaf = it.getLeaf();
-            it.setLeafPostEnd(delLeaf);
-            if (delLeaf == m_pEnd) {
-                m_pEnd = delLeaf->pprev;
-                m_pEnd->pnext = nullptr;
-                it = CIterator(m_pEnd);
-                it.setLeaf(nullptr);
+            if (!it.isValid()) {
+                return;
+            }
+            leaf* p = it.getLeaf();
+            leaf* pNext = nullptr;
+            if (p == m_pEnd) {
+                m_pEnd = p->pprev;
+                it.setLeafPostEnd(m_pEnd);
             }
             else {
-                leaf* currLeaf = it.getLeaf();
-                currLeaf->pprev = delLeaf->pprev;
-                delLeaf->pprev->pnext = currLeaf;
+                pNext = m_pEnd;
+                while (nullptr != pNext) {
+                    if (pNext->pprev == p) {
+                        break;
+                    }
+                    pNext = pNext->pprev;
+                }
+                it.setLeaf(pNext);
             }
-            delete delLeaf;
+            if (nullptr != pNext) {
+                pNext->pprev = p->pprev;
+            }
+            if (!p->pprev) {
+                m_pBegin = pNext;
+            }
+            p->pprev = nullptr;
+            delete p;
         }
 
         int getSize()
@@ -440,9 +463,7 @@ namespace lab618
 
         CIterator end()
         {
-            CIterator end = CIterator(m_pBegin);
-            end.setLeaf(m_pEnd);
-            return end;
+            return CIterator(m_pEnd);
         }
 
     private:

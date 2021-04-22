@@ -1,6 +1,7 @@
 #include <string>
 #include <cstdlib>
 #include "hash.h"
+#include "list.h"
 
 struct TestStruct
 {
@@ -53,19 +54,55 @@ unsigned int hashFunc(const TestStruct* pElement)
     return hash;
 }
 
+const int ELEMENTS_COUNT = 1000;
+typedef lab618::CSingleLinkedList<TestStruct> TestSingleList;
+typedef lab618::CDualLinkedList<TestStruct> TestList;
+
+
+void TestListFunction()
+{
+    // тест односвязного списка
+
+    TestSingleList single_list;
+    for (int i = 0; i < ELEMENTS_COUNT; ++i)
+    {
+        TestStruct ts;
+        generate(&ts);
+        single_list.pushBack(ts);
+    }
+
+    assert(single_list.getSize() == ELEMENTS_COUNT);
+
+    for (TestSingleList::CIterator it = single_list.begin(); it.isValid(); ++it)
+    {
+        it.getLeaf();
+        TestStruct ts = *it;
+        single_list.erase(it);
+    }
+
+    assert(single_list.getSize() == 0);
+
+    /// тест двусвязного списка
+
+    TestList list;
+    for (int i = 0; i < ELEMENTS_COUNT; ++i)
+    {
+        TestStruct ts;
+        generate(&ts);
+        list.pushBack(ts);
+    }
+
+    assert(list.getSize() == ELEMENTS_COUNT);
+
+    for (TestList::CIterator it = list.begin(); it.isValid(); ++it)
+    {
+        it.getLeaf();
+        TestStruct ts = *it;
+        list.erase(it);
+    }
+}
+
+
 int main() {
-    lab618::CHash<TestStruct, hashFunc, compareFunc> h(300, 3);
-    TestStruct* el1 = new TestStruct();
-    TestStruct* el2 = new TestStruct();
-    TestStruct* el3 = new TestStruct();
-    generate(el1);
-    generate(el2);
-    generate(el3);
-    h.add(el1);
-    h.add(el2);
-    h.add(el3);
-    TestStruct del_el;
-    del_el.key = el1->key;
-    bool res = h.find(del_el);
-    std::cout << res;
+    TestListFunction();
 }
