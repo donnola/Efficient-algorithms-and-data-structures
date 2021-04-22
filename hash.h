@@ -77,7 +77,6 @@ namespace lab618
         virtual ~CHash()
         {
             clear();
-            delete[] m_pTable;
         }
 
         /**
@@ -178,15 +177,15 @@ namespace lab618
         */
         bool remove(const T& element)
         {
-            unsigned int el_hash = HashFunc(element);
+            unsigned int el_hash = HashFunc(&element);
             unsigned int idx = el_hash % m_tableSize;
             leaf* cur_leaf = m_pTable[idx];
-            if (Compare(cur_leaf->pData, element) == 0) {
+            if (Compare(cur_leaf->pData, &element) == 0) {
                 m_pTable[idx] = cur_leaf->pnext;
                 m_Memory.deleteObject(cur_leaf);
                 return true;
             }
-            while (Compare(cur_leaf->pnext->pData, element) != 0) {
+            while (Compare(cur_leaf->pnext->pData, &element) != 0) {
                 cur_leaf = cur_leaf->pnext;
                 if (cur_leaf == nullptr) {
                     return false;

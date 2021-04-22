@@ -65,9 +65,7 @@ namespace lab618
             int ind = m_pCurrentBlk->firstFreeIndex;
             T* new_obj = reinterpret_cast<T*>(m_pCurrentBlk->pdata + ind);
 
-            memset(reinterpret_cast<void*>(&new_obj), 0, sizeof(T));
-
-            m_pCurrentBlk->firstFreeIndex = *(reinterpret_cast<int*>(&m_pCurrentBlk->pdata + ind));
+            m_pCurrentBlk->firstFreeIndex = *(reinterpret_cast<int*>(m_pCurrentBlk->pdata + ind));
             ++m_pCurrentBlk->usedCount;
             return new_obj;
         }
