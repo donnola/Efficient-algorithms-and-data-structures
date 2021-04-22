@@ -14,7 +14,6 @@ namespace lab618
             T* pData;
             leaf *pLeft;
             leaf *pRight;
-            leaf *pParent;
             int balanceFactor;
         };
 
@@ -28,10 +27,7 @@ namespace lab618
         };
 
     public:
-        CAVLTree() : m_pRoot(nullptr)
-        {
-            m_Memory(16, true);
-        }
+        CAVLTree() : m_pRoot(nullptr), m_Memory(16, true){}
 
         virtual ~CAVLTree()
         {
@@ -53,8 +49,8 @@ namespace lab618
             newLeaf->balanceFactor = 0;
             newLeaf->pLeft = nullptr;
             newLeaf->pRight = nullptr;
-            Insert(newLeaf);
-            InsertBalance(newLeaf->pParent, newLeaf);
+            bool balanced = false;
+            m_pRoot = Insert(m_pRoot, newLeaf, balanced);
             return true;
         }
 
@@ -74,8 +70,8 @@ namespace lab618
             newLeaf->balanceFactor = 0;
             newLeaf->pLeft = nullptr;
             newLeaf->pRight = nullptr;
-            Insert(newLeaf);
-            InsertBalance(newLeaf->pParent, newLeaf);
+            bool balanced = false;
+            m_pRoot = Insert(m_pRoot, newLeaf, balanced);
             return false;
         }
 
@@ -88,63 +84,63 @@ namespace lab618
             return nullptr;
         }
 
-        bool remove(const T& element)
-        {
-            leaf* curLeaf = m_pRoot;
-            int comp = Compare(curLeaf->pData, element);
-            while(comp != 0) {
-                if (comp > 0 && nullptr != curLeaf->pRight) {
-                    curLeaf = curLeaf->pRight;
-                    comp = Compare(curLeaf->pData, element);
-                }
-                else if (comp < 0 && nullptr != curLeaf->pLeft) {
-
-                    curLeaf = curLeaf->pLeft;
-                    comp = Compare(curLeaf->pData, element);
-                }
-                else {
-                    return false;
-                }
-            }
-            leaf* leftLeaf = curLeaf->pLeft;
-            leaf* rightLeaf = curLeaf->pRight;
-            leaf* minLeaf;
-            if (nullptr == rightLeaf && nullptr == leftLeaf) {
-                DeleteBalance(curLeaf->pParent, curLeaf);
-                if (curLeaf->pParent->pLeft == curLeaf) {
-                    curLeaf->pParent->pLeft = nullptr;
-                }
-                else {
-                    curLeaf->pParent->pRight = nullptr;
-                }
-                m_Memory.deleteObject(curLeaf);
-                return true;
-            }
-            else if (nullptr == rightLeaf) {
-                minLeaf = leftLeaf;
-            }
-            else {
-                minLeaf = FindMinLeaf(rightLeaf);
-            }
-            curLeaf->pData = minLeaf->pData;
-            if (nullptr != minLeaf->pRight) {
-                minLeaf->pData = minLeaf->pRight->pData;
-                DeleteBalance(minLeaf, minLeaf->pRight);
-                minLeaf->pRight = nullptr;
-                m_Memory.deleteObject(minLeaf->pRight);
-            }
-            else {
-                DeleteBalance(minLeaf->pParent, minLeaf);
-                if (minLeaf->pParent->pLeft == minLeaf) {
-                    minLeaf->pParent->pLeft = nullptr;
-                }
-                else {
-                    minLeaf->pParent->pRight = nullptr;
-                }
-                m_Memory.deleteObject(minLeaf);
-            }
-            return true;
-        }
+//        bool remove(const T& element)
+//        {
+//            leaf* curLeaf = m_pRoot;
+//            int comp = Compare(curLeaf->pData, element);
+//            while(comp != 0) {
+//                if (comp > 0 && nullptr != curLeaf->pRight) {
+//                    curLeaf = curLeaf->pRight;
+//                    comp = Compare(curLeaf->pData, element);
+//                }
+//                else if (comp < 0 && nullptr != curLeaf->pLeft) {
+//
+//                    curLeaf = curLeaf->pLeft;
+//                    comp = Compare(curLeaf->pData, element);
+//                }
+//                else {
+//                    return false;
+//                }
+//            }
+//            leaf* leftLeaf = curLeaf->pLeft;
+//            leaf* rightLeaf = curLeaf->pRight;
+//            leaf* minLeaf;
+//            if (nullptr == rightLeaf && nullptr == leftLeaf) {
+//                DeleteBalance(curLeaf->pParent, curLeaf);
+//                if (curLeaf->pParent->pLeft == curLeaf) {
+//                    curLeaf->pParent->pLeft = nullptr;
+//                }
+//                else {
+//                    curLeaf->pParent->pRight = nullptr;
+//                }
+//                m_Memory.deleteObject(curLeaf);
+//                return true;
+//            }
+//            else if (nullptr == rightLeaf) {
+//                minLeaf = leftLeaf;
+//            }
+//            else {
+//                minLeaf = FindMinLeaf(rightLeaf);
+//            }
+//            curLeaf->pData = minLeaf->pData;
+//            if (nullptr != minLeaf->pRight) {
+//                minLeaf->pData = minLeaf->pRight->pData;
+//                DeleteBalance(minLeaf, minLeaf->pRight);
+//                minLeaf->pRight = nullptr;
+//                m_Memory.deleteObject(minLeaf->pRight);
+//            }
+//            else {
+//                DeleteBalance(minLeaf->pParent, minLeaf);
+//                if (minLeaf->pParent->pLeft == minLeaf) {
+//                    minLeaf->pParent->pLeft = nullptr;
+//                }
+//                else {
+//                    minLeaf->pParent->pRight = nullptr;
+//                }
+//                m_Memory.deleteObject(minLeaf);
+//            }
+//            return true;
+//        }
 
         void clear()
         {
@@ -155,6 +151,9 @@ namespace lab618
     private:
         leaf *findLeaf(const T* pElement)
         {
+            if (m_pRoot == nullptr) {
+                return nullptr;
+            }
             leaf* curLeaf = m_pRoot;
             int comp = Compare(curLeaf->pData, pElement);
             while(comp != 0) {
@@ -180,140 +179,137 @@ namespace lab618
             return curLeaf;
         }
 
-        void Insert(leaf* curLeaf) {
-            if (nullptr == m_pRoot) {
-                m_pRoot = curLeaf;
-                curLeaf->pParent = nullptr;
-                return;
-            }
-            leaf* parentLeaf = m_pRoot;
-            while (true) {
-                if (Compare(parentLeaf->pData, curLeaf->pData) < 0) {
-                    if (nullptr == parentLeaf->pLeft) {
-                        parentLeaf->pLeft = curLeaf;
-                        curLeaf->pParent = parentLeaf;
-                        return;
+        leaf* Balance(leaf* curLeaf) {
+            if (2 == curLeaf->balanceFactor) {
+                if (curLeaf->pLeft->balanceFactor < 0) {
+                    if (curLeaf->pLeft->pRight->balanceFactor == 1) {
+                        curLeaf->balanceFactor = -1;
+                        curLeaf->pLeft->balanceFactor = 0;
                     }
-                    parentLeaf = parentLeaf->pLeft;
+                    else if (curLeaf->pLeft->pRight->balanceFactor == 0) {
+                        curLeaf->balanceFactor = 0;
+                        curLeaf->pLeft->balanceFactor = 0;
+                    }
+                    else {
+                        curLeaf->balanceFactor = 0;
+                        curLeaf->pLeft->balanceFactor = 1;
+                    }
+                    curLeaf->pLeft->pRight->balanceFactor = 0;
+                    return BigRight(curLeaf);
+                }
+                if (curLeaf->pLeft->balanceFactor == 1) {
+                    curLeaf->balanceFactor = 0;
+                    curLeaf->pLeft->balanceFactor = 0;
                 }
                 else {
-                    if (nullptr == parentLeaf->pRight) {
-                        parentLeaf->pRight = curLeaf;
-                        curLeaf->pParent = parentLeaf;
-                        return;
+                    curLeaf->balanceFactor = 1;
+                    curLeaf->pLeft->balanceFactor = -1;
+                }
+                return LittleRight(curLeaf);
+            }
+            else if (-2 == curLeaf->balanceFactor) {
+                if (curLeaf->pRight->balanceFactor > 0) {
+                    if (curLeaf->pRight->pLeft->balanceFactor == 1) {
+                        curLeaf->balanceFactor = 0;
+                        curLeaf->pRight->balanceFactor = -1;
                     }
-                    parentLeaf = parentLeaf->pRight;
+                    else if (curLeaf->pRight->pLeft->balanceFactor == 0) {
+                        curLeaf->balanceFactor = 0;
+                        curLeaf->pRight->balanceFactor = 0;
+                    }
+                    else {
+                        curLeaf->balanceFactor = 1;
+                        curLeaf->pRight->balanceFactor = 0;
+                    }
+                    curLeaf->pRight->pLeft->balanceFactor = 0;
+                    return BigLeft(curLeaf);
                 }
-            }
-        }
-
-        leaf* Balance(leaf* parentLeaf) {
-            if (2 == parentLeaf->balanceFactor) {
-                if (parentLeaf->pLeft->balanceFactor < 0) {
-                    parentLeaf->pLeft = LittleLeft(parentLeaf->pLeft);
-                }
-                if (nullptr == parentLeaf->pParent) {
-                    m_pRoot = LittleRight(parentLeaf);
-                    return m_pRoot;
-                }
-                if (parentLeaf->pParent->pLeft == parentLeaf) {
-                    parentLeaf->pParent->pLeft = LittleRight(parentLeaf);
-                    return parentLeaf->pParent->pLeft;
-                }
-                if (parentLeaf->pParent->pRight == parentLeaf) {
-                    parentLeaf->pParent->pRight = LittleRight(parentLeaf);
-                    return parentLeaf->pParent->pRight;
-                }
-            }
-            else if (-2 == parentLeaf->balanceFactor) {
-                if (parentLeaf->pRight->balanceFactor > 0) {
-                    parentLeaf->pRight = LittleRight(parentLeaf->pRight);
-                }
-                if (nullptr == parentLeaf->pParent) {
-                    m_pRoot = LittleLeft(parentLeaf);
-                    return m_pRoot;
-                }
-                if (parentLeaf->pParent->pLeft == parentLeaf) {
-                    parentLeaf->pParent->pLeft = LittleLeft(parentLeaf);
-                    return parentLeaf->pParent->pLeft;
-                }
-                if (parentLeaf->pParent->pRight == parentLeaf) {
-                    parentLeaf->pParent->pRight = LittleLeft(parentLeaf);
-                    return parentLeaf->pParent->pRight;
-                }
-            }
-            if (0 == parentLeaf->balanceFactor) {
-                parentLeaf;
-            }
-        }
-
-        void DeleteBalance(leaf* parentLeaf, leaf* curLeaf) {
-            if (nullptr != parentLeaf) {
-                if (parentLeaf->pLeft == curLeaf) {
-                    parentLeaf->balanceFactor -= 1;
-                } else {
-                    parentLeaf->balanceFactor += 1;
-                }
-                parentLeaf = Balance(parentLeaf);
-                if (0 == parentLeaf->balanceFactor || m_pRoot == parentLeaf) {
-                    return;
-                }
-                DeleteBalance(parentLeaf->pParent, parentLeaf);
-            }
-        }
-
-        void InsertBalance(leaf* parentLeaf, leaf* curLeaf) {
-            if (nullptr != parentLeaf) {
-                if (parentLeaf->pLeft == curLeaf) {
-                    parentLeaf->balanceFactor += 1;
+                if (curLeaf->pRight->balanceFactor == -1) {
+                    curLeaf->balanceFactor = 0;
+                    curLeaf->pRight->balanceFactor = 0;
                 }
                 else {
-                    parentLeaf->balanceFactor -= 1;
+                    curLeaf->balanceFactor = -1;
+                    curLeaf->pRight->balanceFactor = 1;
                 }
-                parentLeaf = Balance(parentLeaf);
-                if (0 == parentLeaf->balanceFactor || m_pRoot == parentLeaf) {
-                    return;
-                }
-                InsertBalance(parentLeaf->pParent, parentLeaf);
+                return LittleLeft(curLeaf);
             }
+            return curLeaf;
+        }
+
+        leaf* Insert(leaf* parentLeaf, leaf* curLeaf, bool &balanced) {
+            if (!parentLeaf) {
+                return curLeaf;
+            }
+            if (Compare(parentLeaf->pData, curLeaf->pData) < 0) {
+                parentLeaf->pLeft = Insert(parentLeaf->pLeft, curLeaf, balanced);
+                if (!balanced) {
+                    ++parentLeaf->balanceFactor;
+                }
+            }
+            else {
+                parentLeaf->pRight = Insert(parentLeaf->pRight, curLeaf, balanced);
+                if (!balanced) {
+                    --parentLeaf->balanceFactor;
+                }
+            }
+            if (parentLeaf->balanceFactor == 0 || balanced) {
+                balanced = true;
+                return parentLeaf;
+            }
+            if (parentLeaf->balanceFactor == -2 || parentLeaf->balanceFactor == 2) {
+                leaf* newParentLeaf = Balance(parentLeaf);
+                if (newParentLeaf->balanceFactor == 0) {
+                    balanced = true;
+                }
+                return newParentLeaf;
+            }
+            return parentLeaf;
+        }
+
+
+//        void DeleteBalance(leaf* parentLeaf, leaf* curLeaf) {
+//            if (nullptr != parentLeaf) {
+//                if (parentLeaf->pLeft == curLeaf) {
+//                    parentLeaf->balanceFactor -= 1;
+//                } else {
+//                    parentLeaf->balanceFactor += 1;
+//                }
+//                if (2 == parentLeaf->balanceFactor || -2 == parentLeaf->balanceFactor) {
+//                    parentLeaf = Balance(parentLeaf);
+//                }
+//                if (m_pRoot == parentLeaf || 0 == parentLeaf->balanceFactor) {
+//                    return;
+//                }
+//                DeleteBalance(parentLeaf->pParent, parentLeaf);
+//            }
+//        }
+
+        leaf* BigRight(leaf* curLeaf) {
+            curLeaf->pLeft = LittleLeft(curLeaf->pLeft);
+            return LittleRight(curLeaf);
+        }
+
+        leaf* BigLeft(leaf* curLeaf) {
+            curLeaf->pRight = LittleRight(curLeaf->pRight);
+            return LittleLeft(curLeaf);
         }
 
         leaf* LittleRight(leaf* curLeaf) {
-            curLeaf->pLeft->pParent = curLeaf->pParent;
-            curLeaf->pParent = curLeaf->pLeft;
-            curLeaf->pLeft->pRight->pParent = curLeaf;
             leaf* p = curLeaf->pLeft;
             curLeaf->pLeft = p->pRight;
             p->pRight = curLeaf;
-            if (p->balanceFactor == 1) {
-                curLeaf->balanceFactor = 0;
-                p->balanceFactor = 0;
-            }
-            if (p->balanceFactor == 0) {
-                curLeaf->balanceFactor = 1;
-                p->balanceFactor = -1;
-            }
             return p;
         }
 
         leaf* LittleLeft(leaf* curLeaf) {
-            curLeaf->pRight->pParent = curLeaf->pParent;
-            curLeaf->pParent = curLeaf->pRight;
-            curLeaf->pRight->pLeft->pParent = curLeaf;
             leaf* p = curLeaf->pRight;
             curLeaf->pRight = p->pLeft;
             p->pLeft = curLeaf;
-            if (p->balanceFactor == -1) {
-                curLeaf->balanceFactor = 0;
-                p->balanceFactor = 0;
-            }
-            if (p->balanceFactor == 0) {
-                curLeaf->balanceFactor = -1;
-                p->balanceFactor = 1;
-            }
             return p;
         }
 
+        size_t size = 0;
         leaf* m_pRoot;
         CMemoryManager<leaf> m_Memory;
     };

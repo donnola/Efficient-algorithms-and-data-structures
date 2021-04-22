@@ -65,11 +65,44 @@ unsigned int hashFunc(const TestStruct* pElement)
     return hash;
 }
 
-const int ELEMENTS_COUNT = 100000;
-
+const int ELEMENTS_COUNT = 100;
+typedef lab618::CDualLinkedList<TestStruct> TestList;
 
 void TestListFunction()
 {
+    TestList list;
+    for (int i = 0; i < ELEMENTS_COUNT; ++i)
+    {
+        TestStruct ts;
+        generate(&ts);
+        list.pushBack(ts);
+    }
+    assert(list.getSize() == ELEMENTS_COUNT);
+
+    size_t current_count = ELEMENTS_COUNT;
+    size_t ik = 0;
+    for (TestList::CIterator it = list.end(); it.isValid(); --it, ++ik)
+    {
+        TestStruct ts = *it;
+        if (ik % 3 == 0)
+        {
+            list.erase(it); // удаляем каждый третий
+            --current_count;
+            assert(list.getSize() == current_count);
+        }
+    }
+    assert(list.getSize() == current_count);
+    for (TestList::CIterator it = list.end(); it.isValid(); --it)
+    {
+        TestStruct ts = *it;
+        --current_count;
+        list.eraseAndNext(it);
+    }
+
+}
+
+
+void TestRate() {
     lab618::CAVLTree<TestStruct, compareFunc> avl;
     lab618::CHash<TestStruct, hashFunc, compareFunc> table(10000, 16);
     TestStruct** array = new TestStruct*[ELEMENTS_COUNT];
@@ -87,11 +120,9 @@ void TestListFunction()
     }
 
     templates::mergeSort<TestStruct>(array, ELEMENTS_COUNT, compareFunc);
-
-
 }
 
 
 int main() {
-    TestListFunction();
+    TestRate();
 }
