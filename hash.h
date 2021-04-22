@@ -164,7 +164,7 @@ namespace lab618
         T* find(const T& pElement)
         {
             unsigned int idx = 0;
-            leaf* el_leaf = findLeaf(pElement, idx);
+            leaf* el_leaf = findLeaf(&pElement, idx);
             if (nullptr != el_leaf)
             {
                 return el_leaf->pData;

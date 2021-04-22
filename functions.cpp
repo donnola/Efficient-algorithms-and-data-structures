@@ -54,12 +54,18 @@ unsigned int hashFunc(const TestStruct* pElement)
 }
 
 int main() {
-    lab618::CHash<TestStruct, hashFunc, compareFunc> h(300, 8);
-    TestStruct* el = new TestStruct();
-    generate(el);
-    h.add(el);
+    lab618::CHash<TestStruct, hashFunc, compareFunc> h(300, 3);
+    TestStruct* el1 = new TestStruct();
+    TestStruct* el2 = new TestStruct();
+    TestStruct* el3 = new TestStruct();
+    generate(el1);
+    generate(el2);
+    generate(el3);
+    h.add(el1);
+    h.add(el2);
+    h.add(el3);
     TestStruct del_el;
-    del_el.key = el->key;
-    bool res = h.remove(del_el);
+    del_el.key = el1->key;
+    bool res = h.find(del_el);
     std::cout << res;
 }
