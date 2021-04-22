@@ -1,21 +1,23 @@
 #include <string>
 #include <cstdlib>
+#include "sort.h"
+#include "avltree.h"
 #include "hash.h"
 #include "list.h"
 
 struct TestStruct
 {
-    std::string key;
-    std::string value1;
-    std::string value2;
+    std::string key1;
+    std::string key2;
 };
 
-static std::string makeRandomString(int minL = 7, int maxL = 14)
+static std::string makeRandomString(int minL = 7, int maxL = 20)
 {
     int length = rand() % maxL + minL;
     std::string s;
     s.reserve(length);
-    const char dict[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    const char dict[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+                        "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя";
     const int dict_len = sizeof(dict);
     for (int i = 0; i < length; ++i) {
         s += dict[(rand() % dict_len)];
@@ -25,63 +27,68 @@ static std::string makeRandomString(int minL = 7, int maxL = 14)
 
 static void generate(TestStruct *pts)
 {
-    pts->key = makeRandomString();
-    pts->value1 = makeRandomString();
-    pts->value2 = makeRandomString();
+    pts->key1 = makeRandomString();
+    pts->key2 = makeRandomString();
 }
 
 int compareFunc(const TestStruct *pElem1, const TestStruct *pElem2)
 {
-    if (pElem1->key < pElem2->key) {
+    if (pElem1->key1 == pElem2->key1 && pElem1->key2 == pElem2->key2) {
+        return 0;
+    }
+    if (pElem1->key1 < pElem2->key1) {
         return 1;
     }
-    if (pElem1->key == pElem2->key) {
-        return 0;
+    if (pElem1->key1 == pElem2->key1 && pElem1->key2 < pElem2->key2) {
+        return 1;
     }
     return -1;
 }
 
 unsigned int hashFunc(const TestStruct* pElement)
 {
-    const int p = 7;
+    const int p1 = 7;
+    const int p2 = 3;
     unsigned int hash = 0;
-    size_t p_pow = 1;
-    for (char i : pElement->key)
+    size_t p_pow1 = 1;
+    for (char i : pElement->key1)
     {
-        hash += (i - 'A') * p_pow;
-        p_pow *= p;
+        hash += (i - 'A') * p_pow1;
+        p_pow1 *= p1;
+    }
+    size_t p_pow2 = 1;
+    for (char i : pElement->key2)
+    {
+        hash += (i - 'A') * p_pow2;
+        p_pow2 *= p2;
     }
     return hash;
 }
 
-const int ELEMENTS_COUNT = 1000000;
-typedef lab618::CSingleLinkedList<TestStruct> TestSingleList;
-typedef lab618::CDualLinkedList<TestStruct> TestList;
+const int ELEMENTS_COUNT = 100000;
 
 
 void TestListFunction()
 {
-    TestList list;
-    for (int i = 0; i < ELEMENTS_COUNT; ++i)
-    {
-        TestStruct ts;
-        generate(&ts);
-        list.pushBack(ts);
+    lab618::CAVLTree<TestStruct, compareFunc> avl;
+    lab618::CHash<TestStruct, hashFunc, compareFunc> table(10000, 16);
+    TestStruct** array = new TestStruct*[ELEMENTS_COUNT];
+    for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
+        array[i] = new TestStruct();
+        generate(array[i]);
     }
 
-    assert(list.getSize() == ELEMENTS_COUNT);
-
-    for (int i = 0; i < ELEMENTS_COUNT / 4; ++i) {
-        list.popBack();
+    for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
+        avl.add(array[i]);
     }
 
-    for (TestList::CIterator it = list.end(); it.isValid(); --it)
-    {
-        TestStruct ts = *it;
-        list.eraseAndNext(it);
+    for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
+        table.add(array[i]);
     }
 
-    assert(list.getSize() == 0);
+    templates::mergeSort<TestStruct>(array, ELEMENTS_COUNT, compareFunc);
+
+
 }
 
 

@@ -50,11 +50,12 @@ namespace lab618
             if (nullptr == m_pBlocks)
             {
                 m_pCurrentBlk = newBlock();
+                m_pBlocks = m_pCurrentBlk;
             }
             else if (-1 == m_pCurrentBlk->firstFreeIndex)
             {
                 block* tblock = m_pBlocks;
-                while (-1 == tblock->firstFreeIndex) {
+                while (nullptr != tblock && -1 == tblock->firstFreeIndex) {
                     tblock = tblock->pnext;
                 }
                 if (nullptr == tblock) {
@@ -216,7 +217,7 @@ namespace lab618
         // Начало списка блоков
         block* m_pBlocks;
         // Текущий блок
-        block *m_pCurrentBlk;
+        block* m_pCurrentBlk;
         // Удалять ли элементы при освобождении
         bool m_isDeleteElementsOnDestruct;
     };
