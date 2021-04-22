@@ -1,5 +1,6 @@
 #include <string>
 #include <cstdlib>
+#include "hash.h"
 
 struct TestStruct
 {
@@ -50,4 +51,8 @@ unsigned int hashFunc(const TestStruct* pElement)
         p_pow *= p;
     }
     return hash;
+}
+
+int main() {
+
 }

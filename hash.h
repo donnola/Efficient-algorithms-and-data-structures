@@ -178,7 +178,7 @@ namespace lab618
         */
         bool remove(const T& element)
         {
-            unsigned int el_hash = HashFunc(pElement);
+            unsigned int el_hash = HashFunc(element);
             unsigned int idx = el_hash % m_tableSize;
             leaf* cur_leaf = m_pTable[idx];
             if (Compare(cur_leaf->pData, element) == 0) {
