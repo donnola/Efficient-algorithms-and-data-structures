@@ -158,11 +158,12 @@ namespace lab618
             block* pnew_block = new block;
             pnew_block->pdata = reinterpret_cast<T*>(new char[sizeof(T) * m_blkSize]);
             memset(reinterpret_cast<void*>(pnew_block->pdata), 0, sizeof(T) * m_blkSize);
-            for (int i = 0; i < m_blkSize - 1; ++i)
+            T* p = pnew_block->pdata;
+            for (int i = 0; i < m_blkSize - 1; ++i, ++p)
             {
-                *(reinterpret_cast<int*>(pnew_block->pdata + i)) = i + 1;
+                *(reinterpret_cast<int*>(p)) = i + 1;
             }
-            *(reinterpret_cast<int*>(pnew_block->pdata + (m_blkSize - 1))) = -1;
+            *(reinterpret_cast<int*>(p)) = -1;
 
             pnew_block->firstFreeIndex = 0;
             pnew_block->usedCount = 0;
