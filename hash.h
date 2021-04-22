@@ -69,10 +69,8 @@ namespace lab618
         Размер Хеш таблицы реализуем жестко — изменение размера таблицы в зависимости от числа элементов в контейнере не требуется.
         Все создаваемые листики списков разрешения коллизий храним в менеджере памяти.
         */
-        CHash(int hashTableSize, int default_block_size): m_tableSize(hashTableSize), m_pTable(new leaf*[hashTableSize])
-        {
-            m_Memory(default_block_size, true);
-        }
+        CHash(int hashTableSize, int default_block_size): m_tableSize(hashTableSize),
+        m_pTable(new leaf*[hashTableSize]), m_Memory(default_block_size, true){}
         /**
         Деструктор. Должен освобождать всю выделенную память
         */
@@ -180,25 +178,23 @@ namespace lab618
         */
         bool remove(const T& element)
         {
-            unsigned int idx = 0;
-            leaf* el_leaf = findLeaf(element, idx);
-            if (nullptr != el_leaf) {
-                leaf* cur_leaf = m_pTable[idx];
-                if (el_leaf == cur_leaf)
-                {
-                    m_pTable[idx] = cur_leaf->pnext;
-                    m_Memory.deleteObject(element);
-                    return true;
-                }
-                while (el_leaf != cur_leaf->pnext)
-                {
-                    cur_leaf = cur_leaf->pnext;
-                }
-                cur_leaf->pnext = el_leaf->pnext;
-                m_Memory.deleteObject(element);
+            unsigned int idx = findId(element);
+            leaf* cur_leaf = m_pTable[idx];
+            if (Compare(cur_leaf->pData, element) == 0) {
+                m_pTable[idx] = cur_leaf->pnext;
+                m_Memory.deleteObject(cur_leaf);
                 return true;
             }
-            return false;
+            while (Compare(cur_leaf->pnext->pData, element) != 0) {
+                cur_leaf = cur_leaf->pnext;
+                if (cur_leaf == nullptr) {
+                    return false;
+                }
+            }
+            leaf* new_next_leaf = cur_leaf->pnext->pnext;
+            m_Memory.deleteObject(cur_leaf->pnext);
+            cur_leaf->pnext = new_next_leaf;
+            return true;
         }
 
         /**
@@ -207,10 +203,7 @@ namespace lab618
         void clear()
         {
             m_Memory.clear();
-            for (leaf* cur_leaf: m_pTable)
-            {
-                cur_leaf = nullptr;
-            }
+            memset(reinterpret_cast<void*>(m_pTable), 0, sizeof(leaf) * m_tableSize);
         }
     private:
         /**
@@ -225,8 +218,7 @@ namespace lab618
         */
         leaf *findLeaf(const T* pElement, unsigned int & idx)
         {
-            unsigned int el_hash = HashFunc(pElement);
-            idx = el_hash % m_tableSize;
+            idx = findId(pElement);
             leaf* cur_leaf = m_pTable[idx];
             while (nullptr != cur_leaf) {
                 if (Compare(cur_leaf->pData, pElement) == 0)
@@ -236,6 +228,12 @@ namespace lab618
                 cur_leaf = cur_leaf->pnext;
             }
             return nullptr;
+        }
+
+        unsigned int findId(const T* pElement)
+        {
+            unsigned int el_hash = HashFunc(pElement);
+            return el_hash % m_tableSize;
         }
 
 
