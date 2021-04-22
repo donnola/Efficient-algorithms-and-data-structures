@@ -178,7 +178,8 @@ namespace lab618
         */
         bool remove(const T& element)
         {
-            unsigned int idx = findId(element);
+            unsigned int el_hash = HashFunc(pElement);
+            unsigned int idx = el_hash % m_tableSize;
             leaf* cur_leaf = m_pTable[idx];
             if (Compare(cur_leaf->pData, element) == 0) {
                 m_pTable[idx] = cur_leaf->pnext;
@@ -218,7 +219,8 @@ namespace lab618
         */
         leaf *findLeaf(const T* pElement, unsigned int & idx)
         {
-            idx = findId(pElement);
+            unsigned int el_hash = HashFunc(pElement);
+            idx = el_hash % m_tableSize;
             leaf* cur_leaf = m_pTable[idx];
             while (nullptr != cur_leaf) {
                 if (Compare(cur_leaf->pData, pElement) == 0)
@@ -229,13 +231,6 @@ namespace lab618
             }
             return nullptr;
         }
-
-        unsigned int findId(const T* pElement)
-        {
-            unsigned int el_hash = HashFunc(pElement);
-            return el_hash % m_tableSize;
-        }
-
 
         /**
         Размер Хеш-таблицы
