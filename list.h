@@ -394,13 +394,7 @@ namespace lab618
                 it.setLeafPreBegin(m_pBegin);
             }
             else {
-                pPrev = m_pBegin;
-                while (nullptr != pPrev) {
-                    if (pPrev->pnext == p) {
-                        break;
-                    }
-                    pPrev = pPrev->pnext;
-                }
+                pPrev = p->pprev;
                 it.setLeaf(pPrev);
             }
             if (nullptr != pPrev) {
@@ -408,6 +402,9 @@ namespace lab618
             }
             if (!p->pnext) {
                 m_pEnd = pPrev;
+            }
+            else {
+                p->pnext->pprev = pPrev;
             }
             p->pnext = nullptr;
             delete p;
@@ -426,13 +423,7 @@ namespace lab618
                 it.setLeafPostEnd(m_pEnd);
             }
             else {
-                pNext = m_pEnd;
-                while (nullptr != pNext) {
-                    if (pNext->pprev == p) {
-                        break;
-                    }
-                    pNext = pNext->pprev;
-                }
+                pNext = p->pnext;
                 it.setLeaf(pNext);
             }
             if (nullptr != pNext) {
@@ -440,6 +431,9 @@ namespace lab618
             }
             if (!p->pprev) {
                 m_pBegin = pNext;
+            }
+            else {
+                p->pprev->pnext = pNext;
             }
             p->pprev = nullptr;
             delete p;
