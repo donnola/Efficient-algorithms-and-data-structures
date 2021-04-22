@@ -111,7 +111,6 @@ namespace lab618
             {
                 cur_block->pdata[i] = cur_block->pdata[i + 1];
             }
-            cur_block->pdata[max_ind] = nullptr;
             cur_block->firstFreeIndex = max_ind;
             --cur_block->usedCount;
             return true;
