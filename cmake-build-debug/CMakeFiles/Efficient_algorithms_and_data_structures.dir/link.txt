@@ -1,1 +1,0 @@
-/usr/bin/c++ -g CMakeFiles/Efficient_algorithms_and_data_structures.dir/functions.cpp.o -o Efficient_algorithms_and_data_structures 
