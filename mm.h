@@ -140,7 +140,6 @@ namespace lab618
             {
                 throw CException();
             }
-
             m_pBlocks = nullptr;
             m_pCurrentBlk = nullptr;
 
