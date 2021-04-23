@@ -84,68 +84,17 @@ namespace lab618
             return nullptr;
         }
 
-//        bool remove(const T& element)
-//        {
-//            leaf* curLeaf = m_pRoot;
-//            int comp = Compare(curLeaf->pData, element);
-//            while(comp != 0) {
-//                if (comp > 0 && nullptr != curLeaf->pRight) {
-//                    curLeaf = curLeaf->pRight;
-//                    comp = Compare(curLeaf->pData, element);
-//                }
-//                else if (comp < 0 && nullptr != curLeaf->pLeft) {
-//
-//                    curLeaf = curLeaf->pLeft;
-//                    comp = Compare(curLeaf->pData, element);
-//                }
-//                else {
-//                    return false;
-//                }
-//            }
-//            leaf* leftLeaf = curLeaf->pLeft;
-//            leaf* rightLeaf = curLeaf->pRight;
-//            leaf* minLeaf;
-//            if (nullptr == rightLeaf && nullptr == leftLeaf) {
-//                DeleteBalance(curLeaf->pParent, curLeaf);
-//                if (curLeaf->pParent->pLeft == curLeaf) {
-//                    curLeaf->pParent->pLeft = nullptr;
-//                }
-//                else {
-//                    curLeaf->pParent->pRight = nullptr;
-//                }
-//                m_Memory.deleteObject(curLeaf);
-//                return true;
-//            }
-//            else if (nullptr == rightLeaf) {
-//                minLeaf = leftLeaf;
-//            }
-//            else {
-//                minLeaf = FindMinLeaf(rightLeaf);
-//            }
-//            curLeaf->pData = minLeaf->pData;
-//            if (nullptr != minLeaf->pRight) {
-//                minLeaf->pData = minLeaf->pRight->pData;
-//                DeleteBalance(minLeaf, minLeaf->pRight);
-//                minLeaf->pRight = nullptr;
-//                m_Memory.deleteObject(minLeaf->pRight);
-//            }
-//            else {
-//                DeleteBalance(minLeaf->pParent, minLeaf);
-//                if (minLeaf->pParent->pLeft == minLeaf) {
-//                    minLeaf->pParent->pLeft = nullptr;
-//                }
-//                else {
-//                    minLeaf->pParent->pRight = nullptr;
-//                }
-//                m_Memory.deleteObject(minLeaf);
-//            }
-//            return true;
-//        }
+        bool remove(const T& element) {
+            bool removed = false;
+            bool balanced = false;
+            m_pRoot = findAndDelete(m_pRoot, element, balanced, removed);
+            return removed;
+        }
 
         void clear()
         {
-            m_Memory.clear();
             m_pRoot = nullptr;
+            m_Memory.clear();
         }
 
     private:
@@ -172,14 +121,36 @@ namespace lab618
             return curLeaf;
         }
 
-        leaf* FindMinLeaf(leaf* curLeaf) {
+        leaf* findMinLeaf(leaf* curLeaf) {
             while (nullptr != curLeaf->pLeft) {
                 curLeaf = curLeaf->pLeft;
             }
             return curLeaf;
         }
 
-        leaf* Balance(leaf* curLeaf) {
+        leaf* deleteMinLeaf(leaf* parentLeaf, bool &balanced) {
+            if (nullptr == parentLeaf->pLeft) {
+                return parentLeaf->pRight;
+            }
+            parentLeaf->pLeft = deleteMinLeaf(parentLeaf->pLeft, balanced);
+//            if (!balanced) {
+//                --parentLeaf->balanceFactor;
+//            }
+//            if (parentLeaf->balanceFactor == 1 || parentLeaf->balanceFactor == -1 || balanced) {
+//                balanced = true;
+//                return parentLeaf;
+//            }
+//            if (parentLeaf->balanceFactor == -2 || parentLeaf->balanceFactor == 2) {
+//                leaf* newParentLeaf = balance(parentLeaf);
+//                if (newParentLeaf->balanceFactor == 1 || newParentLeaf->balanceFactor == -1) {
+//                    balanced = true;
+//                }
+//                return newParentLeaf;
+//            }
+            return parentLeaf;
+        }
+
+        leaf* balance(leaf* curLeaf) {
             if (2 == curLeaf->balanceFactor) {
                 if (curLeaf->pLeft->balanceFactor < 0) {
                     if (curLeaf->pLeft->pRight->balanceFactor == 1) {
@@ -237,6 +208,112 @@ namespace lab618
             return curLeaf;
         }
 
+//        leaf* findAndDelete(leaf* parentLeaf, const T& element, bool &balanced, bool& removed) {
+//            if (nullptr == parentLeaf) {
+//                return parentLeaf;
+//            }
+//            if (Compare(parentLeaf->pData, &element) != 0) {
+//                if (Compare(parentLeaf->pData, &element) < 0) {
+//                    parentLeaf->pLeft = findAndDelete(parentLeaf->pLeft, element, balanced, removed);
+//                }
+//                else if (Compare(parentLeaf->pData, &element) > 0) {
+//                    parentLeaf->pRight = findAndDelete(parentLeaf->pRight, element, balanced, removed);
+//                }
+//            }
+//            else {
+//                removed = true;
+//                if (nullptr != parentLeaf->pLeft && nullptr != parentLeaf->pRight) {
+//                    leaf* minLeaf = findMinLeaf(parentLeaf->pRight);
+//                    leaf* leftChild = parentLeaf->pLeft;
+//                    leaf* rightChild = parentLeaf->pRight;
+//                    m_Memory.deleteObject(parentLeaf);
+//                    minLeaf->pLeft = leftChild;
+//                    minLeaf->pRight = rightChild;
+//                    return minLeaf;
+//                    //parentLeaf->pRight = findAndDelete(parentLeaf->pRight, *minLeaf->pData, balanced, removed);
+//                }
+//                else {
+//                    if (nullptr != parentLeaf->pLeft) {
+//                        leaf* leftChild = parentLeaf->pLeft;
+//                        m_Memory.deleteObject(parentLeaf);
+//                        return leftChild;
+//                    }
+//                    else if (nullptr != parentLeaf->pRight) {
+//                        leaf* rightChild = parentLeaf->pRight;
+//                        m_Memory.deleteObject(parentLeaf);
+//                        return rightChild;
+//                    }
+//                    else {
+//                        m_Memory.deleteObject(parentLeaf);
+//                        return nullptr;
+//                    }
+//                }
+//                return parentLeaf;
+//            }
+//        }
+
+        leaf* findAndDelete(leaf* parentLeaf, const T& element, bool &balanced, bool& removed) {
+            if (parentLeaf == nullptr) {
+                balanced = true;
+                return parentLeaf;
+            }
+            if (Compare(parentLeaf->pData, &element) != 0) {
+                if (Compare(parentLeaf->pData, &element) < 0) {
+                    parentLeaf->pLeft = findAndDelete(parentLeaf->pLeft, element, balanced, removed);
+//                    if (removed && !balanced) {
+//                        --parentLeaf->balanceFactor;
+//                    }
+                }
+                else if (Compare(parentLeaf->pData, &element) > 0) {
+                    parentLeaf->pRight = findAndDelete(parentLeaf->pRight, element, balanced, removed);
+//                    if (removed and !balanced) {
+//                        ++parentLeaf->balanceFactor;
+//                    }
+                }
+//                if (parentLeaf->balanceFactor == 1 || parentLeaf->balanceFactor == -1 || balanced || !removed) {
+//                    balanced = true;
+//                    return parentLeaf;
+//                }
+//                if (parentLeaf->balanceFactor == -2 || parentLeaf->balanceFactor == 2) {
+//                    leaf* newParentLeaf = balance(parentLeaf);
+//                    if (newParentLeaf->balanceFactor == 1 || newParentLeaf->balanceFactor == -1) {
+//                        balanced = true;
+//                    }
+//                    return newParentLeaf;
+//                }
+                return parentLeaf;
+            }
+            else {
+                removed = true;
+                leaf* leftChild = parentLeaf->pLeft;
+                leaf* rightChild = parentLeaf->pRight;
+                size_t b = parentLeaf->balanceFactor;
+                m_Memory.deleteObject(parentLeaf);
+                if (nullptr == rightChild) {
+                    return leftChild;
+                }
+                leaf* minLeaf = findMinLeaf(rightChild);
+                minLeaf->pRight = deleteMinLeaf(rightChild, balanced);
+                minLeaf->pLeft = leftChild;
+                minLeaf->balanceFactor = b;
+//                if (!balanced) {
+//                    ++minLeaf->balanceFactor;
+//                }
+//                if (parentLeaf->balanceFactor == 1 || parentLeaf->balanceFactor == -1 || balanced) {
+//                    balanced = true;
+//                    return minLeaf;
+//                }
+//                if (minLeaf->balanceFactor == -2 || minLeaf->balanceFactor == 2) {
+//                    leaf* newParentLeaf = balance(minLeaf);
+//                    if (newParentLeaf->balanceFactor == 1 || newParentLeaf->balanceFactor == -1) {
+//                        balanced = true;
+//                    }
+//                    return newParentLeaf;
+//                }
+                return minLeaf;
+            }
+        }
+
         leaf* Insert(leaf* parentLeaf, leaf* curLeaf, bool &balanced) {
             if (!parentLeaf) {
                 return curLeaf;
@@ -258,7 +335,7 @@ namespace lab618
                 return parentLeaf;
             }
             if (parentLeaf->balanceFactor == -2 || parentLeaf->balanceFactor == 2) {
-                leaf* newParentLeaf = Balance(parentLeaf);
+                leaf* newParentLeaf = balance(parentLeaf);
                 if (newParentLeaf->balanceFactor == 0) {
                     balanced = true;
                 }
@@ -266,24 +343,6 @@ namespace lab618
             }
             return parentLeaf;
         }
-
-
-//        void DeleteBalance(leaf* parentLeaf, leaf* curLeaf) {
-//            if (nullptr != parentLeaf) {
-//                if (parentLeaf->pLeft == curLeaf) {
-//                    parentLeaf->balanceFactor -= 1;
-//                } else {
-//                    parentLeaf->balanceFactor += 1;
-//                }
-//                if (2 == parentLeaf->balanceFactor || -2 == parentLeaf->balanceFactor) {
-//                    parentLeaf = Balance(parentLeaf);
-//                }
-//                if (m_pRoot == parentLeaf || 0 == parentLeaf->balanceFactor) {
-//                    return;
-//                }
-//                DeleteBalance(parentLeaf->pParent, parentLeaf);
-//            }
-//        }
 
         leaf* BigRight(leaf* curLeaf) {
             curLeaf->pLeft = LittleLeft(curLeaf->pLeft);

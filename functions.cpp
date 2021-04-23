@@ -65,7 +65,7 @@ unsigned int hashFunc(const TestStruct* pElement)
     return hash;
 }
 
-const int ELEMENTS_COUNT = 100000;
+const int ELEMENTS_COUNT = 100;
 typedef lab618::CDualLinkedList<TestStruct> TestList;
 
 void TestListFunction()
@@ -107,10 +107,16 @@ void TestRate() {
     lab618::CHash<TestStruct, hashFunc, compareFunc> table(10000, 16);
     TestStruct** array1 = new TestStruct*[ELEMENTS_COUNT];
     TestStruct** array2 = new TestStruct*[ELEMENTS_COUNT];
+    TestStruct** array3 = new TestStruct*[ELEMENTS_COUNT];
     for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
         array1[i] = new TestStruct();
         generate(array1[i]);
-        array2[i] = array1[i];
+        array2[i] = new TestStruct();
+        array2[i]->key1 = array1[i]->key1;
+        array2[i]->key2 = array1[i]->key2;
+        array3[i] = new TestStruct();
+        array3[i]->key1 = array1[i]->key1;
+        array3[i]->key2 = array1[i]->key2;
     }
 
     for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
@@ -118,10 +124,22 @@ void TestRate() {
     }
 
     for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
-        table.add(array1[i]);
+        table.add(array2[i]);
     }
 
-    templates::mergeSort<TestStruct>(array1, ELEMENTS_COUNT, compareFunc);
+
+    for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
+        bool deleted = avl.remove(*array1[i]);
+        assert(deleted);
+    }
+
+    for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
+        bool deleted = table.remove(*array2[i]);
+        assert(deleted);
+    }
+
+    templates::mergeSort<TestStruct>(array3, ELEMENTS_COUNT, compareFunc);
+
 }
 
 

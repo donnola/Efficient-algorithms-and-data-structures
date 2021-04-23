@@ -90,31 +90,15 @@ namespace lab618
             {
                 return false;
             }
-            leaf* cur_leaf = m_pTable[idx];
-            if (nullptr == cur_leaf)
-            {
-                cur_leaf = m_Memory.newObject();
-                if (nullptr == cur_leaf)
-                {
-                    throw CMemoryException();
-                }
-                cur_leaf->pData = pElement;
-                cur_leaf->pnext = nullptr;
-                m_pTable[idx] = cur_leaf;
-                return true;
-            }
-            while (nullptr != cur_leaf->pnext)
-            {
-                cur_leaf = cur_leaf->pnext;
-            }
-            cur_leaf->pnext = m_Memory.newObject();
-            cur_leaf = cur_leaf->pnext;
+
+            leaf* cur_leaf = m_Memory.newObject();
             if (nullptr == cur_leaf)
             {
                 throw CMemoryException();
             }
             cur_leaf->pData = pElement;
-            cur_leaf->pnext = nullptr;
+            cur_leaf->pnext = m_pTable[idx];
+            m_pTable[idx] = cur_leaf;
             return true;
         }
         /**
@@ -130,31 +114,14 @@ namespace lab618
                 el_leaf->pData = pElement;
                 return true;
             }
-            leaf* cur_leaf = m_pTable[idx];
-            if (nullptr == cur_leaf)
-            {
-                cur_leaf = m_Memory.newObject();
-                if (nullptr == cur_leaf)
-                {
-                    throw CMemoryException();
-                }
-                cur_leaf->pData = pElement;
-                cur_leaf->pnext = nullptr;
-                m_pTable[idx] = cur_leaf;
-                return false;
-            }
-            while (nullptr != cur_leaf->pnext)
-            {
-                cur_leaf = cur_leaf->pnext;
-            }
-            cur_leaf->pnext = m_Memory.newObject();
-            cur_leaf = cur_leaf->pnext;
+            leaf* cur_leaf = m_Memory.newObject();
             if (nullptr == cur_leaf)
             {
                 throw CMemoryException();
             }
             cur_leaf->pData = pElement;
-            cur_leaf->pnext = nullptr;
+            cur_leaf->pnext = m_pTable[idx];
+            m_pTable[idx] = cur_leaf;
             return false;
         }
 
@@ -180,16 +147,19 @@ namespace lab618
             unsigned int el_hash = HashFunc(&element);
             unsigned int idx = el_hash % m_tableSize;
             leaf* cur_leaf = m_pTable[idx];
+            if (cur_leaf == nullptr) {
+                return false;
+            }
             if (Compare(cur_leaf->pData, &element) == 0) {
                 m_pTable[idx] = cur_leaf->pnext;
                 m_Memory.deleteObject(cur_leaf);
                 return true;
             }
-            while (Compare(cur_leaf->pnext->pData, &element) != 0) {
+            while (nullptr != cur_leaf->pnext && Compare(cur_leaf->pnext->pData, &element) != 0) {
                 cur_leaf = cur_leaf->pnext;
-                if (cur_leaf == nullptr) {
-                    return false;
-                }
+            }
+            if (cur_leaf->pnext == nullptr) {
+                return false;
             }
             leaf* new_next_leaf = cur_leaf->pnext->pnext;
             m_Memory.deleteObject(cur_leaf->pnext);

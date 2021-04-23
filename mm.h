@@ -99,25 +99,7 @@ namespace lab618
             {
                 return false;
             }
-
-            int max_ind = cur_block->firstFreeIndex - 1;
-            if (max_ind == -2)
-            {
-                max_ind = m_blkSize - 1;
-            }
             (cur_block->pdata + cur_ind)->~T();
-            for (int i = cur_ind; i < max_ind - 1; ++i)
-            {
-                cur_block->pdata[i] = cur_block->pdata[i + 1];
-            }
-            memset(reinterpret_cast<void*>(cur_block->pdata + max_ind), 0, sizeof(T));
-            if (max_ind + 1 == m_blkSize) {
-                *(reinterpret_cast<int*>(cur_block->pdata + max_ind)) = -1;
-            }
-            else {
-                *(reinterpret_cast<int*>(cur_block->pdata + max_ind)) = max_ind + 1;
-            }
-            cur_block->firstFreeIndex = max_ind;
             --cur_block->usedCount;
             return true;
         }
@@ -139,6 +121,9 @@ namespace lab618
             if (!m_isDeleteElementsOnDestruct && nullptr != cur_block)
             {
                 throw CException();
+            }
+            if (cur_block == nullptr) {
+                return;
             }
             m_pBlocks = nullptr;
             m_pCurrentBlk = nullptr;
