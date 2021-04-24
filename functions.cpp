@@ -127,7 +127,7 @@ const int ELEMENTS_COUNT2 = 1000000;
 
 
 void TestRate() {
-    for (int i = ELEMENTS_COUNT1; i <= ELEMENTS_COUNT2; i += 1000) {
+    for (int i = ELEMENTS_COUNT1; i <= ELEMENTS_COUNT2; i += 10000) {
         lab618::CAVLTree<TestStruct, compareFunc> avl;
         lab618::CHash<TestStruct, hashFunc, compareFunc> table(1000, 16);
         TestStruct** array1 = new TestStruct*[i];
