@@ -67,92 +67,95 @@ unsigned int hashFunc(const TestStruct* pElement)
     return hash;
 }
 
-const int ELEMENTS_COUNT = 10000;
-typedef lab618::CDualLinkedList<TestStruct> TestList;
 
-void TestListFunction()
-{
-    TestList list;
-    for (int i = 0; i < ELEMENTS_COUNT; ++i)
-    {
-        TestStruct ts;
-        generate(&ts);
-        list.pushBack(ts);
-    }
-    assert(list.getSize() == ELEMENTS_COUNT);
+//typedef lab618::CDualLinkedList<TestStruct> TestList;
+//
+//void TestListFunction()
+//{
+//    TestList list;
+//    for (int i = 0; i < ELEMENTS_COUNT; ++i)
+//    {
+//        TestStruct ts;
+//        generate(&ts);
+//        list.pushBack(ts);
+//    }
+//    assert(list.getSize() == ELEMENTS_COUNT);
+//
+//    size_t current_count = ELEMENTS_COUNT;
+//    size_t ik = 0;
+//    for (TestList::CIterator it = list.end(); it.isValid(); --it, ++ik)
+//    {
+//        TestStruct ts = *it;
+//        if (ik % 3 == 0)
+//        {
+//            list.erase(it); // удаляем каждый третий
+//            --current_count;
+//            assert(list.getSize() == current_count);
+//        }
+//    }
+//    assert(list.getSize() == current_count);
+//    for (TestList::CIterator it = list.end(); it.isValid(); --it)
+//    {
+//        TestStruct ts = *it;
+//        --current_count;
+//        list.eraseAndNext(it);
+//    }
+//
+//}
 
-    size_t current_count = ELEMENTS_COUNT;
-    size_t ik = 0;
-    for (TestList::CIterator it = list.end(); it.isValid(); --it, ++ik)
-    {
-        TestStruct ts = *it;
-        if (ik % 3 == 0)
-        {
-            list.erase(it); // удаляем каждый третий
-            --current_count;
-            assert(list.getSize() == current_count);
-        }
-    }
-    assert(list.getSize() == current_count);
-    for (TestList::CIterator it = list.end(); it.isValid(); --it)
-    {
-        TestStruct ts = *it;
-        --current_count;
-        list.eraseAndNext(it);
-    }
 
-}
+const int ELEMENTS_COUNT1 = 10000;
+const int ELEMENTS_COUNT2 = 1000000;
 
 
 void TestRate() {
-    lab618::CAVLTree<TestStruct, compareFunc> avl;
-    lab618::CHash<TestStruct, hashFunc, compareFunc> table(1000, 16);
-    TestStruct** array1 = new TestStruct*[ELEMENTS_COUNT];
-    TestStruct** array2 = new TestStruct*[ELEMENTS_COUNT];
-    TestStruct** array3 = new TestStruct*[ELEMENTS_COUNT];
-    for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
-        array1[i] = new TestStruct();
-        generate(array1[i]);
-        array2[i] = new TestStruct();
-        array2[i]->key1 = array1[i]->key1;
-        array2[i]->key2 = array1[i]->key2;
-        array3[i] = new TestStruct();
-        array3[i]->key1 = array1[i]->key1;
-        array3[i]->key2 = array1[i]->key2;
-    }
+    for (int i = ELEMENTS_COUNT1; i <= ELEMENTS_COUNT2; i += 1000) {
+        lab618::CAVLTree<TestStruct, compareFunc> avl;
+        lab618::CHash<TestStruct, hashFunc, compareFunc> table(1000, 16);
+        TestStruct** array1 = new TestStruct*[i];
+        for (size_t j = 0; j < i; ++j) {
+            array1[j] = new TestStruct();
+            generate(array1[j]);
+        }
 
-    auto begin_avl_add = std::chrono::steady_clock::now();
-    for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
-        bool added = avl.add(array1[i]);
-        assert(added);
-    }
-    auto end_avl_add = std::chrono::steady_clock::now();
-    auto avl_add_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_avl_add - begin_avl_add);
-    std::cout << avl_add_time.count() << std::endl;
+        auto begin_hash_add = std::chrono::steady_clock::now();
+        for (size_t j = 0; j < i; ++j) {
+            bool added = table.add(array1[j]);
+            assert(added);
+        }
+        auto end_hash_add = std::chrono::steady_clock::now();
+        auto hash_add_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_hash_add - begin_hash_add);
+        std::cout << hash_add_time.count() << std::endl;
 
-    auto begin_hash_add = std::chrono::steady_clock::now();
-    for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
-        bool added = table.add(array2[i]);
-        assert(added);
-    }
-    auto end_hash_add = std::chrono::steady_clock::now();
-    auto hash_add_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_hash_add - begin_hash_add);
-    std::cout << hash_add_time.count() << std::endl;
 
-    auto begin_sort = std::chrono::steady_clock::now();
-    templates::mergeSort<TestStruct>(array3, ELEMENTS_COUNT, compareFunc);
-    auto end_sort = std::chrono::steady_clock::now();
-    auto sort_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_sort - begin_sort);
-    std::cout << sort_time.count() << std::endl;
+        auto begin_avl_add = std::chrono::steady_clock::now();
+        for (size_t j = 0; j < i; ++j) {
+            bool added = avl.add(array1[j]);
+            assert(added);
+        }
+        auto end_avl_add = std::chrono::steady_clock::now();
+        auto avl_add_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_avl_add - begin_avl_add);
+        std::cout << avl_add_time.count() << std::endl;
 
-    for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
-        TestStruct* el = avl.find(*array1[i]);
-        assert(compareFunc(el, array1[i]) == 0);
-    }
 
-    for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
-        TestStruct* el = table.find(*array2[i]);
-        assert(compareFunc(el, array2[i]) == 0);
+
+        auto begin_sort = std::chrono::steady_clock::now();
+        templates::mergeSort<TestStruct>(array1, i, compareFunc);
+        auto end_sort = std::chrono::steady_clock::now();
+        auto sort_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_sort - begin_sort);
+        std::cout << sort_time.count() << std::endl;
+
+
+        for (size_t j = 0; j < i; ++j) {
+            TestStruct* el = table.find(*array1[j]);
+            assert(compareFunc(el, array1[j]) == 0);
+        }
+
+        for (size_t j = 0; j < i; ++j) {
+            TestStruct* el = avl.find(*array1[j]);
+            assert(compareFunc(el, array1[j]) == 0);
+        }
+
     }
 
 }

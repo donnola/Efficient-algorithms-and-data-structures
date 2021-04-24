@@ -70,13 +70,18 @@ namespace lab618
         Все создаваемые листики списков разрешения коллизий храним в менеджере памяти.
         */
         CHash(int hashTableSize, int default_block_size): m_tableSize(hashTableSize),
-        m_pTable(new leaf*[hashTableSize]), m_Memory(default_block_size, true){}
+        m_pTable(new leaf*[hashTableSize]), m_Memory(default_block_size, true){
+            for (int i = 0; i < m_tableSize; ++i) {
+                m_pTable[i] = nullptr;
+            }
+        }
         /**
         Деструктор. Должен освобождать всю выделенную память
         */
         virtual ~CHash()
         {
             clear();
+            m_pTable = nullptr;
         }
 
         /**
@@ -173,7 +178,9 @@ namespace lab618
         void clear()
         {
             m_Memory.clear();
-            memset(reinterpret_cast<void*>(m_pTable), 0, sizeof(leaf) * m_tableSize);
+            for (int i = 0; i < m_tableSize; ++i) {
+                m_pTable[i] = nullptr;
+            }
         }
     private:
         /**
