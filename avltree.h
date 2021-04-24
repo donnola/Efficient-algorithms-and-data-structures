@@ -77,7 +77,7 @@ namespace lab618
 
         T* find(const T& pElement)
         {
-            leaf* elLeaf = findLeaf(pElement);
+            leaf* elLeaf = findLeaf(&pElement);
             if (nullptr != elLeaf) {
                 return elLeaf->pData;
             }

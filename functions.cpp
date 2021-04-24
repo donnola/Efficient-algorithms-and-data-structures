@@ -1,5 +1,7 @@
 #include <string>
 #include <cstdlib>
+#include <iostream>
+#include <chrono>
 #include "sort.h"
 #include "avltree.h"
 #include "hash.h"
@@ -65,7 +67,7 @@ unsigned int hashFunc(const TestStruct* pElement)
     return hash;
 }
 
-const int ELEMENTS_COUNT = 100;
+const int ELEMENTS_COUNT = 10000;
 typedef lab618::CDualLinkedList<TestStruct> TestList;
 
 void TestListFunction()
@@ -104,7 +106,7 @@ void TestListFunction()
 
 void TestRate() {
     lab618::CAVLTree<TestStruct, compareFunc> avl;
-    lab618::CHash<TestStruct, hashFunc, compareFunc> table(10000, 16);
+    lab618::CHash<TestStruct, hashFunc, compareFunc> table(1000, 16);
     TestStruct** array1 = new TestStruct*[ELEMENTS_COUNT];
     TestStruct** array2 = new TestStruct*[ELEMENTS_COUNT];
     TestStruct** array3 = new TestStruct*[ELEMENTS_COUNT];
@@ -119,26 +121,39 @@ void TestRate() {
         array3[i]->key2 = array1[i]->key2;
     }
 
+    auto begin_avl_add = std::chrono::steady_clock::now();
     for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
-        avl.add(array1[i]);
+        bool added = avl.add(array1[i]);
+        assert(added);
     }
+    auto end_avl_add = std::chrono::steady_clock::now();
+    auto avl_add_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_avl_add - begin_avl_add);
+    std::cout << avl_add_time.count() << std::endl;
 
+    auto begin_hash_add = std::chrono::steady_clock::now();
     for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
-        table.add(array2[i]);
+        bool added = table.add(array2[i]);
+        assert(added);
     }
+    auto end_hash_add = std::chrono::steady_clock::now();
+    auto hash_add_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_hash_add - begin_hash_add);
+    std::cout << hash_add_time.count() << std::endl;
 
-
-    for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
-        bool deleted = avl.remove(*array1[i]);
-        assert(deleted);
-    }
-
-    for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
-        bool deleted = table.remove(*array2[i]);
-        assert(deleted);
-    }
-
+    auto begin_sort = std::chrono::steady_clock::now();
     templates::mergeSort<TestStruct>(array3, ELEMENTS_COUNT, compareFunc);
+    auto end_sort = std::chrono::steady_clock::now();
+    auto sort_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_sort - begin_sort);
+    std::cout << sort_time.count() << std::endl;
+
+    for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
+        TestStruct* el = avl.find(*array1[i]);
+        assert(compareFunc(el, array1[i]) == 0);
+    }
+
+    for (size_t i = 0; i < ELEMENTS_COUNT; ++i) {
+        TestStruct* el = table.find(*array2[i]);
+        assert(compareFunc(el, array2[i]) == 0);
+    }
 
 }
 
