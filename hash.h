@@ -81,6 +81,7 @@ namespace lab618
         virtual ~CHash()
         {
             clear();
+            delete[] m_pTable;
             m_pTable = nullptr;
         }
 
