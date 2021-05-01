@@ -1,6 +1,7 @@
 #include <string>
 #include <cstdlib>
 #include <chrono>
+#include <fstream>
 #include "sort.h"
 #include "avltree.h"
 #include "hash.h"
@@ -124,12 +125,21 @@ TestStruct* binFind(TestStruct **ppArray, const TestStruct& pElement, int len) {
 
 const int ELEMENTS_COUNT1 = 10000;
 const int ELEMENTS_COUNT2 = 1000000;
+int INCREASE = 30000;
 
 
 void TestRate() {
-    for (int i = ELEMENTS_COUNT1; i <= ELEMENTS_COUNT2; i += 10000) {
+    std::ofstream fout("время.csv");
+    fout << "кол-во эл-ов,кол-во эл-ов x2,"
+            "hash table добавление,hash table поиск сущ,hash table поиск несущ,hash table удаление по одному,"
+            "avl добавление,avl поиск сущ,avl поиск несущ,avl удаление по одному,"
+            "sort сортировка,sort поиск сущ,sort поиск несущ,"
+            "hash table удаление всего,avl удаление всего,sort удаление всего\n";
+    for (int i = ELEMENTS_COUNT1; i <= ELEMENTS_COUNT2; i += INCREASE) {
+        std::string s;
+        s += std::to_string(i) + "," + std::to_string(i*2) + ",";
         lab618::CAVLTree<TestStruct, compareFunc> avl;
-        lab618::CHash<TestStruct, hashFunc, compareFunc> table(1000, 16);
+        lab618::CHash<TestStruct, hashFunc, compareFunc> table(i, 10000);
         TestStruct** array1 = new TestStruct*[i];
         TestStruct** array2 = new TestStruct*[i];
         TestStruct** array3 = new TestStruct*[2 * i];
@@ -154,7 +164,7 @@ void TestRate() {
         }
         auto end_hash_add = std::chrono::steady_clock::now();
         auto hash_add = std::chrono::duration_cast<std::chrono::milliseconds>(end_hash_add - begin_hash_add);
-        //std::cout << hash_add.count() << std::endl;
+        s += std::to_string(hash_add.count()) + ",";
 
         // find yes
         auto begin_hash_find_yes = std::chrono::steady_clock::now();
@@ -165,17 +175,27 @@ void TestRate() {
         }
         auto end_hash_find_yes = std::chrono::steady_clock::now();
         auto hash_find_yes = std::chrono::duration_cast<std::chrono::milliseconds>(end_hash_find_yes - begin_hash_find_yes);
-        //std::cout << hash_find_yes.count() << std::endl;
+        s += std::to_string(hash_find_yes.count()) + ",";
 
         // find no
         auto begin_hash_find_no = std::chrono::steady_clock::now();
-        for (size_t j = 0; j < i; ++j) {
+        for (size_t j = 0; j < 2*i; ++j) {
             TestStruct* el = table.find(*array3[j]);
             assert(el == nullptr);
         }
         auto end_hash_find_no = std::chrono::steady_clock::now();
         auto hash_find_no = std::chrono::duration_cast<std::chrono::milliseconds>(end_hash_find_no - begin_hash_find_no);
-        //std::cout << hash_find_no.count() << std::endl;
+        s += std::to_string(hash_find_no.count()) + ",";
+
+        // del
+        auto begin_hash_del = std::chrono::steady_clock::now();
+        for (size_t j = 0; j < i; ++j) {
+            bool d = table.remove(*array1[j]);
+            assert(d == true);
+        }
+        auto end_hash_del = std::chrono::steady_clock::now();
+        auto hash_del = std::chrono::duration_cast<std::chrono::milliseconds>(end_hash_del - begin_hash_del);
+        s += std::to_string(hash_del.count()) + ",";
 
 
         //// avl
@@ -187,7 +207,7 @@ void TestRate() {
         }
         auto end_avl_add = std::chrono::steady_clock::now();
         auto avl_add = std::chrono::duration_cast<std::chrono::milliseconds>(end_avl_add - begin_avl_add);
-        //std::cout << avl_add.count() << std::endl;
+        s += std::to_string(avl_add.count()) + ",";
 
         // find yes
         auto begin_avl_find_yes = std::chrono::steady_clock::now();
@@ -198,17 +218,27 @@ void TestRate() {
         }
         auto end_avl_find_yes = std::chrono::steady_clock::now();
         auto avl_find_yes = std::chrono::duration_cast<std::chrono::milliseconds>(end_avl_find_yes - begin_avl_find_yes);
-        //std::cout << avl_find_yes.count() << std::endl;
+        s += std::to_string(avl_find_yes.count()) + ",";
 
         // find no
         auto begin_avl_find_no = std::chrono::steady_clock::now();
-        for (size_t j = 0; j < i; ++j) {
+        for (size_t j = 0; j < 2*i; ++j) {
             TestStruct* el = avl.find(*array3[j]);
             assert(el == nullptr);
         }
         auto end_avl_find_no = std::chrono::steady_clock::now();
         auto avl_find_no = std::chrono::duration_cast<std::chrono::milliseconds>(end_avl_find_no - begin_avl_find_no);
-        //std::cout << avl_find_no.count() << std::endl;
+        s += std::to_string(avl_find_no.count()) + ",";
+
+        // del
+        auto begin_avl_del = std::chrono::steady_clock::now();
+        for (size_t j = 0; j < i; ++j) {
+            bool d = avl.remove(*array1[j]);
+            assert(d == true);
+        }
+        auto end_avl_del = std::chrono::steady_clock::now();
+        auto avl_del = std::chrono::duration_cast<std::chrono::milliseconds>(end_avl_del - begin_avl_del);
+        s += std::to_string(avl_del.count()) + ",";
 
 
         //// sort
@@ -217,7 +247,7 @@ void TestRate() {
         templates::mergeSort<TestStruct>(array1, i, compareFunc);
         auto end_sort = std::chrono::steady_clock::now();
         auto sort = std::chrono::duration_cast<std::chrono::milliseconds>(end_sort - begin_sort);
-        //std::cout << sort.count() << std::endl;
+        s += std::to_string(sort.count()) + ",";
 
         // find yes
         auto begin_sort_find_yes = std::chrono::steady_clock::now();
@@ -227,18 +257,49 @@ void TestRate() {
             assert(compareFunc(el, array2[j]) == 0);
         }
         auto end_sort_find_yes = std::chrono::steady_clock::now();
-        auto sort_find_yes = std::chrono::duration_cast<std::chrono::milliseconds>(begin_sort_find_yes - end_sort_find_yes);
-        //std::cout << sort_find_yes.count() << std::endl;
+        auto sort_find_yes = std::chrono::duration_cast<std::chrono::milliseconds>(end_sort_find_yes - begin_sort_find_yes);
+        s += std::to_string(sort_find_yes.count()) + ",";
 
+        // find no
         auto begin_sort_find_no = std::chrono::steady_clock::now();
-        for (size_t j = 0; j < i; ++j) {
+        for (size_t j = 0; j < 2*i; ++j) {
             TestStruct* el = binFind(array1, *array3[j], i);
             assert(el == nullptr);
         }
         auto end_sort_find_no = std::chrono::steady_clock::now();
         auto sort_find_no = std::chrono::duration_cast<std::chrono::milliseconds>(end_sort_find_no - begin_sort_find_no);
-        //std::cout << sort_find_no.count() << std::endl;
+        s += std::to_string(sort_find_no.count()) + ",";
+
+        for (size_t j = 0; j < i; ++j) {
+            bool hashAdded = table.add(array2[j]);
+            bool avlAdded = avl.add(array2[j]);
+            assert(hashAdded);
+            assert(avlAdded);
+        }
+
+        auto begin_hash_clear = std::chrono::steady_clock::now();
+        table.clear();
+        auto end_hash_clear = std::chrono::steady_clock::now();
+        auto hash_clear = std::chrono::duration_cast<std::chrono::milliseconds>(end_hash_clear - begin_hash_clear);
+        s += std::to_string(hash_clear.count()) + ",";
+
+        auto begin_avl_clear = std::chrono::steady_clock::now();
+        avl.clear();
+        auto end_avl_clear = std::chrono::steady_clock::now();
+        auto avl_clear = std::chrono::duration_cast<std::chrono::milliseconds>(end_avl_clear - begin_avl_clear);
+        s += std::to_string(avl_clear.count()) + ",";
+
+        auto begin_array_del = std::chrono::steady_clock::now();
+        delete[] array1;
+        auto end_array_del = std::chrono::steady_clock::now();
+        auto array_del = std::chrono::duration_cast<std::chrono::milliseconds>(end_array_del - begin_array_del);
+        s += std::to_string(array_del.count()) + "\n";
+        fout << s;
+        if (i == 100000) {
+            INCREASE = 300000;
+        }
     }
+    fout.close();
 }
 
 
