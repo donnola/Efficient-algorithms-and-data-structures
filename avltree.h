@@ -27,7 +27,7 @@ namespace lab618
         };
 
     public:
-        CAVLTree() : m_pRoot(nullptr), m_Memory(16, true){}
+        CAVLTree() : m_pRoot(nullptr), m_Memory(10000, true){}
 
         virtual ~CAVLTree()
         {

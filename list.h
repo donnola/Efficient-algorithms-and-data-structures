@@ -349,9 +349,11 @@ namespace lab618
             leaf* newEnd = m_pEnd->pprev;
             delete m_pEnd;
             m_pEnd = newEnd;
-            m_pEnd->pnext = nullptr;
             if (nullptr == newEnd) {
                 m_pBegin = nullptr;
+            }
+            else {
+                m_pEnd->pnext = nullptr;
             }
             return tmp;
         }
@@ -374,9 +376,11 @@ namespace lab618
             leaf* newBegin = m_pBegin->pnext;
             delete m_pBegin;
             m_pBegin = newBegin;
-            m_pBegin->pprev = nullptr;
             if (nullptr == newBegin) {
                 m_pEnd = nullptr;
+            }
+            else {
+                m_pBegin->pprev = nullptr;
             }
             return tmp;
         }
