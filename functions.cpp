@@ -68,20 +68,27 @@ unsigned int hashFunc(const TestStruct* pElement)
     return hash;
 }
 
+const int ELEMENTS_COUNT = 1000;
 
-//typedef lab618::CDualLinkedList<TestStruct> TestList;
-//
-//void TestListFunction()
-//{
-//    TestList list;
-//    for (int i = 0; i < ELEMENTS_COUNT; ++i)
-//    {
-//        TestStruct ts;
-//        generate(&ts);
-//        list.pushBack(ts);
-//    }
-//    assert(list.getSize() == ELEMENTS_COUNT);
-//
+
+typedef lab618::CDualLinkedList<TestStruct> TestList;
+
+void TestListFunction()
+{
+    TestList list;
+    for (int i = 0; i < ELEMENTS_COUNT; ++i)
+    {
+        TestStruct ts;
+        generate(&ts);
+        list.pushBack(ts);
+    }
+    assert(list.getSize() == ELEMENTS_COUNT);
+
+    for (int i = 0; i < ELEMENTS_COUNT; ++i)
+    {
+        TestStruct ts = list.popBack();
+    }
+
 //    size_t current_count = ELEMENTS_COUNT;
 //    size_t ik = 0;
 //    for (TestList::CIterator it = list.end(); it.isValid(); --it, ++ik)
@@ -101,8 +108,8 @@ unsigned int hashFunc(const TestStruct* pElement)
 //        --current_count;
 //        list.eraseAndNext(it);
 //    }
-//
-//}
+
+}
 
 TestStruct* binFind(TestStruct **ppArray, const TestStruct& pElement, int len) {
     int l = -1;
@@ -305,4 +312,5 @@ void TestRate() {
 
 int main() {
     TestRate();
+    //TestListFunction();
 }
