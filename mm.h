@@ -75,18 +75,11 @@ namespace lab618
         bool deleteObject(T* p)
         {
             block* cur_block = m_pBlocks;
-            int cur_ind = -1;
+            int cur_ind;
             while (cur_block != nullptr)
             {
-                for (int i = 0; i < m_blkSize; ++i) {
-                    if((cur_block->pdata +i) == p)
-                    {
-                        cur_ind = i;
-                        break;
-                    }
-                }
-                if (-1 != cur_ind)
-                {
+                if (p >= cur_block->pdata && p <= (cur_block->pdata + m_blkSize - 1)) {
+                    cur_ind = p - cur_block->pdata;
                     break;
                 }
                 cur_block = cur_block->pnext;
