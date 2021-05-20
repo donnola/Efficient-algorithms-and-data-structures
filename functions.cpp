@@ -116,10 +116,11 @@ TestStruct* binFind(TestStruct **ppArray, const TestStruct& pElement, int len) {
     int r = len;
     while (l < r - 1) {
         int m = (l + r) / 2;
-        if (compareFunc(ppArray[m], &pElement) > 0) {
+        int compare = compareFunc(ppArray[m], &pElement);
+        if (compare > 0) {
             l = m;
         }
-        else if (compareFunc(ppArray[m], &pElement) < 0) {
+        else if (compare < 0) {
             r = m;
         }
         else {
